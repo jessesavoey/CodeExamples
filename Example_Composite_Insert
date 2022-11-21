@@ -1,0 +1,311 @@
+-- =============================================
+-- Author: Charavult Jesse Savoey
+-- Description: Composite Insert with 5 Tables
+-- Expertise, Certifications, Organization, Licences, Profiles
+-- =============================================
+
+ALTER PROC [dbo].[Example_Composite_Insert]
+	   		@FirstName nvarchar(100)
+		    ,@LastName nvarchar(100)
+			  ,@mI nvarchar(20)
+				,@AvatarUrl nvarchar(255)
+				,@Name nvarchar(100)
+				,@LocationTypeId int
+				,@LineOne nvarchar(255)
+				,@LineTwo nvarchar(255)
+				,@City nvarchar(255)
+				,@Zip nvarchar(50)
+				,@StateId int
+				,@Latitude float
+				,@Longitude float
+				,@Phone nvarchar(20)
+				,@IndustryId int
+				,@SiteUrl nvarchar(255)
+				,@IsActive bit
+				,@UserId int
+				,@batchExpertises dbo.expertiseUDT READONLY
+				,@batchCertifications dbo.certificationUDT READONLY
+				,@batchLicenses dbo.batchLicenseUDT READONLY
+				,@batchOrganizations dbo.organizationUDT READONLY
+				,@Id int OUTPUT
+
+/*
+	
+	DECLARE  @Id int = 0
+			,@FirstName nvarchar(100) = 'joe'
+			,@LastName nvarchar(100) = 'boe'
+			,@mI nvarchar(1) = 'k'
+			,@AvatarUrl nvarchar(255) = 'www.joe.com'
+			,@Name nvarchar(100) = 'Test'
+			,@LocationTypeId int = 4
+			,@LineOne nvarchar(255) = '123 S Double Ln'
+			,@LineTwo nvarchar(255) = ''
+			,@City nvarchar(255) = 'San Diego'
+			,@Zip nvarchar(50) = '19701'
+			,@StateId int = 1
+			,@Latitude float = 80
+			,@Longitude float = 80
+			,@Phone nvarchar(20) = '123-456-7890'
+			,@IndustryId int = 3
+			,@SiteUrl nvarchar(255) = 'www.google.com'
+			,@IsActive bit = 1
+			,@UserId int = 202
+
+	DECLARE @batchExpertises dbo.expertiseUDT
+
+	INSERT INTO @batchExpertises (Name)
+
+	values
+	('Air-Conditioning')
+	,('Carpetry')
+
+
+	DECLARE @BatchLicenses dbo.batchLicenseUDT
+
+	INSERT INTO @batchLicenses (Name)
+
+	values
+	('Business')
+
+
+	DECLARE @BatchCertifications dbo.certificationUDT
+
+	INSERT INTO @batchCertifications (Name)
+
+	values
+	('Certified Construction Manager')
+	,('ACI Certification')
+
+	DECLARE @BatchOrganizations dbo.organizationUDT
+
+	INSERT INTO @batchOrganizations (Id)
+
+	values
+	(2)
+
+
+
+
+	EXECUTE dbo.Example_Composite_Insert
+			 @FirstName
+			,@LastName
+			,@mI
+			,@AvatarUrl
+			,@Name
+			,@LocationTypeId 
+			,@LineOne 
+			,@LineTwo 
+			,@City 
+			,@Zip 
+			,@StateId
+			,@Latitude 
+			,@Longitude 
+			,@Phone
+			,@IndustryId
+			,@SiteUrl
+			,@IsActive
+			,@UserId
+			,@batchExpertises
+			,@batchCertifications
+			,@batchLicenses
+			,@batchOrganizations
+			,@Id OUTPUT
+			
+
+	EXECUTE [dbo].[Example_SelectById_v2] @Id
+
+
+*/
+
+AS
+
+BEGIN
+
+DECLARE @LocationId int = 0
+
+EXECUTE dbo.Locations_Insert
+		@LocationTypeId 
+		,@LineOne 
+		,@LineTwo 
+		,@City 
+		,@Zip 
+		,@StateId 
+		,@Latitude 
+		,@Longitude 
+		,@UserId 
+		,@LocationId OUTPUT
+
+
+DECLARE @UserProfileId int = 0
+EXECUTE dbo.UserProfiles_Insert
+	 	 @UserId
+	  ,@FirstName 
+    ,@LastName 
+    ,@mI 
+    ,@AvatarUrl
+	  ,@UserProfileId OUTPUT
+
+
+INSERT INTO dbo.Example
+		(
+		[UserProfileId]
+		,[Name]
+		,[LocationId]
+		,[Phone]
+		,[IndustryId]
+		,[SiteUrl]
+		,[IsActive]
+		)
+	VALUES
+		(
+		@UserProfileId
+		,@Name
+		,@LocationId
+		,@Phone
+		,@IndustryId
+		,@SiteUrl
+		,@IsActive
+		)
+
+	SET @Id = SCOPE_IDENTITY()
+
+--Batch Insert for Example Expertise
+
+Insert Into dbo.FieldExpertiseTypes
+		([Name]) 
+		Select
+
+		bE.Name 
+
+		From @BatchExpertises as bE
+
+		Where not exists(
+		Select 1
+		From dbo.FieldExpertiseTypes as fET
+		Where fET.Name = be.Name
+		)
+
+INSERT INTO dbo.ExampleExpertise
+		(
+		ExampleId
+		,FieldExpertiseTypeId
+		,CreatedBy
+		)
+
+Select	@Id
+		,fET.id
+		,@UserProfileId --CreatedBy
+		From dbo.FieldExpertiseTypes as fET
+		Where
+		Exists (
+		Select 1
+		From @BatchExpertises as bE
+		Where bE.[Name] = fET.[Name]
+				)
+
+	
+--Licenses Batch Insert
+
+Insert Into dbo.LicenseTypes
+
+		([Name]) 
+		Select
+
+		bL.Name 
+
+		From @batchLicenses as bL
+
+		Where not exists(
+		Select 1
+		From dbo.LicenseTypes as lT
+		Where lT.Name = bL.Name
+		)
+
+INSERT INTO dbo.ExampleLicenses
+		(
+		ExampleId
+		,LicenseId
+		,CreatedBy
+		)
+
+Select	@Id
+		,lT.id
+		,@UserProfileId --CreatedBy
+		From dbo.LicenseTypes as lT
+		Where
+		Exists (
+		Select 1
+		From @batchLicenses as bL
+		Where bL.[Name] = lT.[Name]
+				)
+
+--Certification Batch Insert
+
+Insert Into dbo.CertificationTypes
+		([Name]) 
+Select
+
+		bC.Name 
+
+		From @batchCertifications as bC
+
+		Where not exists(
+		Select 1
+		From dbo.CertificationTypes as cT
+		Where cT.Name = bC.Name
+		)
+
+
+		
+INSERT INTO dbo.ExampleCertifications
+		(
+		ExampleId
+		,CertificationTypeId
+		,CreatedBy
+		)
+
+Select	@Id
+		,cT.id
+		,@UserProfileId --CreatedBy
+
+		From dbo.CertificationTypes as cT
+		Where
+		Exists (
+		Select 1
+		From @BatchCertifications as bC
+		Where bC.[Name] = cT.[Name]
+				)
+--SET IDENTITY_INSERT dbo.ExampleCertifications OFF
+--Batch Insert for Organizations
+SET IDENTITY_INSERT dbo.Organizations ON
+Insert Into dbo.Organizations
+		([Id])
+
+Select	bO.Id
+	
+
+		From @batchOrganizations as bO
+
+		Where not exists(
+		Select 1
+		From dbo.Organizations as o
+		Where o.id = bO.id
+		)
+
+INSERT INTO dbo.OrganizationExamples
+		(
+		ExampleId
+		,OrganizationId
+		)
+
+Select	@Id
+		,o.id
+
+		From dbo.Organizations as o
+		Where
+		Exists (
+		Select 1
+		From @BatchOrganizations as bO
+		Where bO.[Id] = o.[Id]
+				)
+END
