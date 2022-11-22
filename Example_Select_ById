@@ -1,0 +1,99 @@
+-- =============================================
+-- Author: Jesse Savoey 
+-- Create date: 07/28/2022
+-- Description:	This proc Searches by Organization Name.
+-- Code Reviewer:
+
+-- MODIFIED BY: Tommy C. Ramey
+-- MODIFIED DATE: 8/2/2022
+-- Code Reviewer:
+-- Note: Fixed up code, selects, and search functionality
+-- =============================================
+
+ALTER PROC [dbo].[Examples_Search_ByOrganizationId]
+			 @PageSize int
+			,@PageIndex int 
+			,@OrgId int
+			,@Query nvarchar(200)
+		
+AS
+
+/*-----------TEST CODE-------------
+
+	DECLARE @PageSize int = 10
+			,@PageIndex int = 0
+			,@OrgId int = 3
+			,@Query nvarchar(200) = 'name'
+		
+
+	EXECUTE [dbo].[Example_Search_ByOrganizationId]  @PageSize 
+															,@PageIndex
+															,@OrgId 
+															,@Query
+
+*/-----------END TEST CODE---------
+
+BEGIN
+
+	DECLARE @Offset int = @PageIndex * @PageSize
+
+SELECT  
+	   sC.Id
+      ,sC.[Name]
+	  ,u.Email
+	  ,uP.Id AS userProfileId
+	  ,uP.UserId
+	  ,uP.FirstName
+	  ,uP.LastName
+	  ,uP.MI
+	  ,uP.AvatarUrl
+	  ,l.[Id] AS LocationId
+	  ,lt.[Id] AS LocationTypeId
+	  ,lt.[Name]
+	  ,l.[LineOne]
+	  ,l.[LineTwo]
+	  ,l.[City]
+	  ,l.[Zip]
+	  ,s.[Id] AS StateId
+	  ,s.[Name]
+	  ,s.[Code]
+	  ,l.[Latitude]
+	  ,l.[Longitude]	
+      ,[Phone]
+	  ,iT.id as IndustryId
+      ,iT.[Name] as IndustryName
+      ,sC.SiteUrl AS SiteUrl
+      ,[IsActive]
+	  ,Expertise = (
+							SELECT fET.Id, fET.[Name]
+							FROM dbo.SubcontractorExpertise as sCE 
+							inner join dbo.FieldExpertiseTypes AS fET 
+							ON fET.Id = sCE.FieldExpertiseTypeId
+							WHERE sCE.SubcontractorId = sC.Id
+							FOR JSON AUTO 
+			      )
+	  ,o.[name] AS Organization
+	  ,TotalCount = COUNT (1) OVER()
+	  ,sC.DateCreated
+      ,sC.DateModified
+  FROM dbo.Subcontractors AS sC
+  inner join dbo.UserProfiles AS uP ON sC.UserProfileId = uP.Id
+  inner join dbo.Users AS u ON uP.UserId = u.Id
+  inner join dbo.IndustryTypes as iT ON sC.IndustryId = iT.Id
+  inner join dbo.OrganizationSubcontractors as oSC ON sC.Id = oSC.SubcontractorId
+  inner join dbo.Organizations as o ON oSC.OrganizationId = o.Id
+  inner join dbo.Locations AS l ON sC.LocationId = l.Id 
+  inner join [dbo].[LocationTypes] AS lt ON l.[LocationTypeId] = lt.[Id]
+  inner join [dbo].[States] AS s ON l.[StateId] = s.[Id]
+
+		  WHERE (o.Id = @OrgId)
+		  AND (o.[Name] LIKE '%' + @Query + '%')
+		  OR (sC.[Name] LIKE '%' + @Query + '%')
+		  OR (u.[Email] LIKE '%' + @Query + '%')
+	
+
+	ORDER BY sc.[Id]
+		OFFSET @OffSet Rows
+		Fetch Next @PageSize Rows ONLY
+
+END
