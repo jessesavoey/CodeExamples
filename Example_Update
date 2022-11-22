@@ -1,0 +1,55 @@
+-- =============================================
+-- Author: Charavult Jesse Savoey
+-- Create date: 8/17/2022
+-- Description: This proc inserts necessary data for dbo.Example
+-- =============================================
+
+ALTER   PROC [dbo].[Example_Update]
+@Id int
+,@Name nvarchar(50)
+,@Email nvarchar(50)
+,@Story nvarchar(3000)
+,@CreatedBy int 
+
+/*---------TEST CODE --------------
+	DECLARE	@Id int = 1
+
+	DECLARE @Name nvarchar(50) = 'Jesse Savoey'
+			,@Email nvarchar(50) = 'example@yahoo.com'
+			,@Story nvarchar(3000) = 'This is an updated thing'
+			,@CreatedBy int = 3
+
+	SELECT*
+	FROM [dbo].[ShareStory]
+
+
+	EXECUTE [dbo].[Example_Update]
+			@Name
+			,@Email
+			,@Story
+			,@CreatedBy
+			,@Id
+
+	SELECT*
+	FROM [dbo].[ShareStory]
+	
+	WHERE Id = @Id
+
+*/--------------- END TEST CODE ------------------
+
+AS
+
+BEGIN 
+
+DECLARE @datNow datetime2 = getutcdate()
+
+UPDATE [dbo].[Example]
+	SET [Name] = @Name
+		,[Email] = @Email
+		,[Story] = @Story 
+		,[CreatedBy] = @CreatedBy
+		,[DateModified] = @datNow 
+
+WHERE Id = @Id 
+
+END 
