@@ -1,0 +1,27 @@
+
+-- =============================================
+-- Author: Charavult Jesse Savoey
+-- Create date: 7/28/2022
+-- Description: This proc deletes by id from dbo.Subcontractors
+-- =============================================
+ALTER PROC [dbo].[Example_DeleteById]
+		@Id int
+/*
+
+DECLARE
+	@Id int = 0
+
+EXECUTE dbo.Subcontractors_DeleteById @Id
+
+*/
+
+AS
+
+BEGIN
+
+	DELETE
+
+	FROM dbo.Subcontractors
+	WHERE Id = @Id
+
+END
