@@ -21,9 +21,9 @@ AS
 		
 
 	EXECUTE [dbo].[Example_Search_ByOrganizationId]  @PageSize 
-															,@PageIndex
-															,@OrgId 
-															,@Query
+							,@PageIndex
+							,@OrgId 
+							,@Query
 
 */-----------END TEST CODE---------
 
@@ -59,12 +59,12 @@ SELECT
       ,sC.SiteUrl AS SiteUrl
       ,[IsActive]
 	  ,Expertise = (
-							SELECT fET.Id, fET.[Name]
-							FROM dbo.SubcontractorExpertise as sCE 
-							inner join dbo.FieldExpertiseTypes AS fET 
-							ON fET.Id = sCE.FieldExpertiseTypeId
-							WHERE sCE.SubcontractorId = sC.Id
-							FOR JSON AUTO 
+				SELECT fET.Id, fET.[Name]
+				FROM dbo.SubcontractorExpertise as sCE 
+				inner join dbo.FieldExpertiseTypes AS fET 
+				ON fET.Id = sCE.FieldExpertiseTypeId
+				WHERE sCE.SubcontractorId = sC.Id
+				FOR JSON AUTO 
 			      )
 	  ,o.[name] AS Organization
 	  ,TotalCount = COUNT (1) OVER()
