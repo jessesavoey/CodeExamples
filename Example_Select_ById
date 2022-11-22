@@ -2,12 +2,6 @@
 -- Author: Jesse Savoey 
 -- Create date: 07/28/2022
 -- Description:	This proc Searches by Organization Name.
--- Code Reviewer:
-
--- MODIFIED BY: Tommy C. Ramey
--- MODIFIED DATE: 8/2/2022
--- Code Reviewer:
--- Note: Fixed up code, selects, and search functionality
 -- =============================================
 
 ALTER PROC [dbo].[Examples_Search_ByOrganizationId]
