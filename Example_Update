@@ -31,7 +31,7 @@ ALTER   PROC [dbo].[Example_Update]
 			,@Id
 
 	SELECT*
-	FROM [dbo].[ShareStory]
+	FROM [dbo].[Example]
 	
 	WHERE Id = @Id
 
