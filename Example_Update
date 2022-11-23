@@ -1,7 +1,7 @@
 -- =============================================
 -- Author: Charavult Jesse Savoey
 -- Create date: 8/17/2022
--- Description: This proc inserts necessary data for dbo.Example
+-- Description: This proc updates necessary data for dbo.Example
 -- =============================================
 
 ALTER   PROC [dbo].[Example_Update]
