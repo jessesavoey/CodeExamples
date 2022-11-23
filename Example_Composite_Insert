@@ -138,11 +138,11 @@ EXECUTE dbo.Locations_Insert
 
 DECLARE @UserProfileId int = 0
 EXECUTE dbo.UserProfiles_Insert
-	 	 @UserId
+	   @UserId
 	  ,@FirstName 
-    ,@LastName 
-    ,@mI 
-    ,@AvatarUrl
+  	  ,@LastName 
+ 	  ,@mI 
+   	  ,@AvatarUrl
 	  ,@UserProfileId OUTPUT
 
 
